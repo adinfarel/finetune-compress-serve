@@ -7,19 +7,19 @@ all on free-tier Google Colab T4 GPU.
 
 Base LLM (Llama-3.2-1B/3B)
 
-│
+│  
 ▼
 
 [Stage 1] Fine-Tuning   
 Full FT  │  LoRA  │  QLoRA
 
-│
+│  
 ▼ (best method)
 
 [Stage 2] Compression   
 Quantization  │  Pruning  │  Distillation
 
-│
+│  
 ▼ (best method)
 
 [Stage 3] Serving   
