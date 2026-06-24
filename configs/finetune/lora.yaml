@@ -1,0 +1,26 @@
+model:
+  name_or_path: "meta-llama/Llama-3.2-1B"
+  torch_dtype: "float16"
+  attn_implementation: "eager"
+
+data:
+  dataset_name: "tatsu-lab/alpaca"
+  max_seq_length: 512
+  dataset_fraction: 1.0
+
+lora:
+  r: 16
+  lora_alpha: 32
+  lora_dropout: 0.05
+  target_modules: ["q_proj", "v_proj"]
+
+training:
+  method: "lora"
+  output_dir: "results/stage1/lora"
+  num_train_epochs: 1
+  per_device_train_batch_size: 4
+  gradient_accumulation_steps: 4
+  learning_rate: 2e-4
+  fp16: true
+  bf16: false
+  run_name: "lora-llama3.2-1b"
