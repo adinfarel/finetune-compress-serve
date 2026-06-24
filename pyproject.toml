@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "finetune-compress-serve"
+version = "0.1.0"
+description = "End-to-end LLM lifecycle: fine-tune, compress, serve on T4"
+requires-python = ">=3.10"
+
+dependencies = [
+    # Core
+    "torch>=2.2.0"
+    "transformers>=4.40.0",
+    "datasets>=2.18.0",
+    "accelerate>=0.29.0",
+
+    # Fine-tuning
+    "peft>=0.10.0",      
+    "trl>=0.8.0",         
+
+    # Quantization
+    "bitsandbytes>=0.43.0",
+
+    # Evaluation
+    "evaluate>=0.4.0",
+    "rouge-score>=0.1.2",
+
+    # Experiment tracking
+    "wandb>=0.16.0",
+
+    # Config management
+    "pyyaml>=6.0",
+
+    # Utilities
+    "tqdm>=4.66.0",
+    "numpy>=1.26.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
