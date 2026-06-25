@@ -1,9 +1,8 @@
 import os
 import time
-from urllib import response
 import torch
 from typing import Optional
-from transformers import PreTrainedModel, PreTrainedTokenizer, PretrainedBartModel
+from transformers import PreTrainedModel, PreTrainedTokenizer
 from datasets import load_dataset
 
 JUDGE_SYSTEM_PROMPT = """\
@@ -35,7 +34,7 @@ def generate_response(
     tokenizer: PreTrainedTokenizer,
     prompt: str,
     max_new_tokens: int = 256,
-    device: Optional[str] = None,
+    device: str = "cuda",
 ) -> str:
     inputs = tokenizer(
         prompt,
@@ -75,7 +74,7 @@ def judge_llm_groq(
             model=model,
             messages=[
                 {"role": "system", "content": JUDGE_SYSTEM_PROMPT},
-                {"role", "user", "content": JUDGE_USER_TEMPLATE.format( #type: ignore
+                {"role": "user", "content": JUDGE_USER_TEMPLATE.format(
                     instruction=instruction,
                     response_a=response_a,
                     response_b=response_b
@@ -106,16 +105,16 @@ def run_llm_judge(
     """
     Running LLM-as-judge comparison.
     base_model = A, ft_model = B.
-    Return win/tie/loss rate from subjective ft_model
+    Return win/tie/loss rate from perspective ft_model
     """
     
     dataset = load_dataset("tatsu-lab/alpaca", split=f"train[:{n_samples}]")
     
     wins, ties, losses = 0, 0, 0
     
-    for i, example in dataset:
-        instruction = example['instruction']
-        input_ctx = example.get('inputs', '').strip()
+    for i, example in enumerate(dataset):
+        instruction = example["instruction"] #type: ignore
+        input_ctx = example.get("input", "").strip() #type: ignore
         
         prompt = f"### Instruction:\n{instruction}"
         if input_ctx:

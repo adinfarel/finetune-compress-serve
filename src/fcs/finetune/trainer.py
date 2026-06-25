@@ -7,9 +7,10 @@ from transformers import (
     AutoTokenizer,
     BitsAndBytesConfig,
     TrainingArguments,
+    DataCollatorWithPadding
 )
-from peft import LoHaConfig, LoraConfig, get_peft_model, prepare_model_for_kbit_training
-from trl import SFTTrainer, DataCollatorForCompletionOnlyLM #type: ignore
+from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
+from trl import SFTTrainer #type: ignore
 from datasets import DatasetDict
 from wandb import config
 
@@ -18,7 +19,7 @@ from fcs.finetune.config import FinetuneConfig
 def load_tokenizer(cfg: FinetuneConfig) -> AutoTokenizer:
     tokenizer = AutoTokenizer.from_pretrained(
         cfg.model.name_or_path,
-        trust_remote_mode=True
+        trust_remote_code=True
     )
     
     if tokenizer.pad_token is None:
@@ -51,7 +52,7 @@ def load_model(cfg: FinetuneConfig) -> AutoModelForCausalLM:
         dtype=torch.float16,
         device_map="auto",
         attn_implementation=cfg.model.attn_implementation,
-        trust_remote_mode=True,
+        trust_remote_code=True,
     )
     
     model.config.use_cache = False

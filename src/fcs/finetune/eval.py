@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Optional
 
 from torch.utils.data import DataLoader
-from transformers import PreTrainedModel, PreTrainedTokenizer, DataCollatorWithPadding, PretrainedBartModel
+from transformers import PreTrainedModel, PreTrainedTokenizer, DataCollatorWithPadding
 from datasets import Dataset
 
 from fcs.finetune.config import FinetuneConfig
