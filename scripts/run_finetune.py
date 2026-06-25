@@ -37,6 +37,9 @@ def parse_args():
         help="Path to YAML config, e.g. configs/finetune/lora.yaml"
     )
     
+    parser.add_argument("--groq-api-key", type=str, default=None,
+                        help="Groq API key for LLM-as-judge. Skip judge if not fill")
+    
     parser.add_argument(
         "--skip-benchmark",
         action="store_true",
@@ -53,6 +56,9 @@ def parse_args():
 
 def main():
     args = parse_args()
+    
+    if args.groq_api_key is not None:
+        GROQ_API_KEY = args.groq_api_key
     
     print(f"Loading config from {args.config}")
     cfg = FinetuneConfig.from_yaml(args.config)
@@ -85,9 +91,9 @@ def main():
         device_map="auto"
     )
     
-    full_metrics = run_eval( #type: ignore
+    full_metrics = run_eval( 
         model=ft_model,
-        base_model=base_model
+        base_model=base_model, #type: ignore
         tokenizer=tokenizer, #type: ignore
         dataset=dataset['test'],
         cfg=cfg,
