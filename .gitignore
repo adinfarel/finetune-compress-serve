@@ -2,3 +2,4 @@
 __pycache__/
 .ipynb_checkpoints
 finetune_compress_serve.egg-info/
+.env
