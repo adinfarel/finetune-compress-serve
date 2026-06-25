@@ -97,7 +97,8 @@ def run_eval(
     train_metrics: dict,
     groq_api_key: str,
     run_judge: bool = True,
-    run_benchmark: bool = True
+    run_benchmark: bool = True,
+    model_judge: str = "llama3-70b-8192"
 ) -> dict:
     """
     Running full eval after training done.
@@ -130,6 +131,7 @@ def run_eval(
             tokenizer=tokenizer,
             groq_api_key=groq_api_key,
             n_samples=50,
+            model=model_judge
         )
     
     full_metrics = {
