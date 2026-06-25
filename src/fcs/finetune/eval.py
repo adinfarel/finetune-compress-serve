@@ -90,18 +90,25 @@ def save_results(metrics: dict, output_dir: str, filename: str = "results.json")
 
 def run_eval(
     model: PreTrainedModel,
+    base_model: PreTrainedModel,
     tokenizer: PreTrainedTokenizer,
     dataset: Dataset,
     cfg: FinetuneConfig,
     train_metrics: dict,
+    groq_api_key: str,
+    run_judge: bool = True,
+    run_benchmark: bool = True
 ) -> dict:
     """
     Running full eval after training done.
-    Merge train_metrics + eval_metrics, then save to JSON.
+    perplexity + GSM8K + LLM judge win rate.
     """
+    from fcs.finetune.benchmark import evaluate_gsm8k
+    from fcs.finetune.judge import run_llm_judge
     print("\nRunning evaluation on test...")
     
-    eval_metrics = compute_perplexity(
+    print("\n[1/3] Computing perplexity...")
+    ppl_metrics = compute_perplexity(
         model=model,
         dataset=dataset,
         tokenizer=tokenizer,
@@ -109,14 +116,32 @@ def run_eval(
         max_seq_length=cfg.data.max_seq_length,
     )
     
+    gsm_metrics = {}
+    if run_benchmark:
+        print("\n[2/3] Computing GSM8K accuracy...")
+        gsm_metrics = evaluate_gsm8k(model, tokenizer, n_samples=100)
+    
+    judge_metrics = {}
+    if run_judge and base_model is not None:
+        print("\n[3/3] Running LLM-as-judge...")
+        judge_metrics = run_llm_judge(
+            base_model=base_model,
+            ft_model=model,
+            tokenizer=tokenizer,
+            groq_api_key=groq_api_key,
+            n_samples=50,
+        )
+    
     full_metrics = {
         **train_metrics,
-        "test_perplexity": eval_metrics["perplexity"],
-        "test_avg_loss": eval_metrics["avg_loss"],
-        "test_n_tokens": eval_metrics["n_tokens"],
+        "test_perplexity": ppl_metrics["perplexity"],
+        "test_avg_loss": ppl_metrics["avg_loss"],
+        "test_n_tokens": ppl_metrics["n_tokens"],
         "trainable_param_pct": round(
             train_metrics["trainable_params"] / train_metrics["total_params"] * 100, 4
         ),
+        **gsm_metrics,
+        **judge_metrics,
     }
     
     save_results(full_metrics, cfg.training.output_dir)
