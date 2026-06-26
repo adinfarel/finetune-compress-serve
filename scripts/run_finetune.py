@@ -99,8 +99,8 @@ def main():
         cfg=cfg,
         train_metrics=train_metrics,
         groq_api_key=GROQ_API_KEY,
-        run_judge=not args.run_judge,
-        run_benchmark=not args.run_benchmark,
+        run_judge=not args.skip_judge,
+        run_benchmark=not args.skip_benchmark,
         model_judge=MODEL_NAME
     )
     
