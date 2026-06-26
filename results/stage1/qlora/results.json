@@ -1,0 +1,22 @@
+{
+  "method": "qlora",
+  "train_loss": 1.3606443709284406,
+  "train_time_seconds": 1210.74,
+  "peak_vram_gb": 2.332,
+  "trainable_params": 1703936,
+  "total_params": 750979072,
+  "test_perplexity": 3.4467,
+  "test_avg_loss": 1.237413,
+  "test_n_tokens": 38872,
+  "trainable_param_pct": 0.2269,
+  "gsm8k_accuracy": 0.04,
+  "gsm8k_correct": 4,
+  "gsm8k_total": 100,
+  "judge_win_rate": 0.72,
+  "judge_tie_rate": 0.08,
+  "judge_loss_rate": 0.2,
+  "judge_wins": 36,
+  "judge_ties": 4,
+  "judge_losses": 10,
+  "judge_total": 50
+}

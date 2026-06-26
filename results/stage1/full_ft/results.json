@@ -1,0 +1,22 @@
+{
+  "method": "full",
+  "train_loss": 309.7394186728093,
+  "train_time_seconds": 2273.03,
+  "peak_vram_gb": 11.89,
+  "trainable_params": 1235814400,
+  "total_params": 1235814400,
+  "test_perplexity": NaN,
+  "test_avg_loss": NaN,
+  "test_n_tokens": 38872,
+  "trainable_param_pct": 100.0,
+  "gsm8k_accuracy": 0.0,
+  "gsm8k_correct": 0,
+  "gsm8k_total": 100,
+  "judge_win_rate": 0.0,
+  "judge_tie_rate": 0.0,
+  "judge_loss_rate": 1.0,
+  "judge_wins": 0,
+  "judge_ties": 0,
+  "judge_losses": 50,
+  "judge_total": 50
+}

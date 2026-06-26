@@ -1,0 +1,22 @@
+{
+  "method": "lora",
+  "train_loss": 1.3251014896297237,
+  "train_time_seconds": 716.25,
+  "peak_vram_gb": 5.604,
+  "trainable_params": 1703936,
+  "total_params": 1237518336,
+  "test_perplexity": 3.346,
+  "test_avg_loss": 1.207755,
+  "test_n_tokens": 38872,
+  "trainable_param_pct": 0.1377,
+  "gsm8k_accuracy": 0.06,
+  "gsm8k_correct": 6,
+  "gsm8k_total": 100,
+  "judge_win_rate": 0.72,
+  "judge_tie_rate": 0.1,
+  "judge_loss_rate": 0.18,
+  "judge_wins": 36,
+  "judge_ties": 5,
+  "judge_losses": 9,
+  "judge_total": 50
+}
