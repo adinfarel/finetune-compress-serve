@@ -44,15 +44,17 @@ pip install -e .
 | QLoRA  | 3.447       | 4%        | 72%      | **20.2 min**| **2.3 GB**| 0.23%      | **~6 MB** |
 | Full FT| NaN         | 0%        | 0%       | 37.9 min   | 11.9 GB   | 100%        | ~2.4 GB   |
 
+![Finetune](results/stage1/stage1_comparison.png)
+
 **Winner: QLoRA** — quality nearly identical to LoRA (win rate tied at 72%) at 58% less VRAM (2.3 GB vs 5.6 GB). On T4, this is the clear practical choice.
 
 > **Full FT note**: Training was numerically unstable due to float16 gradient overflow/underflow on T4. A version conflict between `transformers`, `accelerate`, and `bitsandbytes` caused silent re-casting to bfloat16 (not natively supported on Turing), making training either unstable (float16) or extremely slow (~60+ min, bfloat16). Full FT results are excluded from quality comparison and treated as a hardware constraint finding. This would be fully viable on A100/H100 with native bfloat16 support.
 
 See full analysis → [`docs/finetune.md`](docs/finetune.md)
 
-## Stage 2 — Compression Method Comparison 🔄
+## Stage 2 — Compression Method Comparison 
 
-> ⏳ Pending — input: QLoRA merged checkpoint from Stage 1
+> Pending — input: QLoRA merged checkpoint from Stage 1
 
 | Method | Perplexity | Size on Disk | Inference Memory | Latency | Quality Δ |
 |--------|------------|--------------|-----------------|---------|-----------|
@@ -65,9 +67,9 @@ See full analysis → [`docs/finetune.md`](docs/finetune.md)
 
 See full analysis → [`docs/compress.md`](docs/compress.md)
 
-## Stage 3 — Serving Engine Comparison ⏳
+## Stage 3 — Serving Engine Comparison 
 
-> ⏳ Pending Stage 2
+> Pending Stage 2
 
 | Engine | TTFT p50 | ITL p50 | ITL p99 | Throughput | Peak Memory | Attention Backend |
 |--------|----------|---------|---------|------------|-------------|-------------------|
