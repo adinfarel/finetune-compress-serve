@@ -1,0 +1,12 @@
+method: "quant"
+
+model:
+  input_model_path: "results/stage1/qlora_merged"
+  output_dir: "results/stage2/quant_awq"
+  torch_dtype: "float16"
+
+quant:
+  method: "awq"
+  awq_bits: 4
+  awq_group_size: 128
+  awq_zero_point: true

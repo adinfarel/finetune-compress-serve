@@ -1,0 +1,14 @@
+method: "quant"
+
+model:
+  input_model_path: "results/stage1/qlora_merged"
+  output_dir: "results/stage2/quant_int4"
+  dtype: "float16"
+
+quant:
+  method: "int4_bnb"
+  load_in_8bit: false
+  load_in_4bit: true
+  bnb_4bit_quant_type: "nf4"
+  bnb_4bit_compute_dtype: "float16"
+  bnb_4bit_use_double_quant: true

@@ -1,0 +1,12 @@
+method: "prune"
+
+model:
+  input_model_path: "results/stage1/qlora_merged"
+  output_dir: "results/stage2/prune_depth"
+  dtype: "float16"
+
+prune:
+  method: "depth"
+  num_layers_to_remove: 4
+  scoring_metric: "magnitude"
+  calibration_samples: 128

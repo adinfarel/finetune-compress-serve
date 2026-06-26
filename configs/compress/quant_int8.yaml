@@ -1,0 +1,11 @@
+method: "quant"
+
+model:
+  input_model_path: "results/stage1/quant_merged"
+  output_dir: "results/stage2/quant_int8"
+  dtype: "float16"
+
+quant:
+  method: "int8"
+  load_in_8bit: true
+  load_in_4bit: false
