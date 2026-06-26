@@ -6,7 +6,7 @@ model:
 data:
   dataset_name: "tatsu-lab/alpaca"
   max_seq_length: 512
-  dataset_fraction: 1.0
+  dataset_fraction: 0.15
 
 lora:
   r: 16
@@ -21,6 +21,6 @@ training:
   per_device_train_batch_size: 4
   gradient_accumulation_steps: 4
   learning_rate: 2e-4
-  fp16: true
+  fp16: false
   bf16: false
   run_name: "qlora-llama3.2-1b"

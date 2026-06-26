@@ -6,7 +6,7 @@ model:
 data:
   dataset_name: "tatsu-lab/alpaca"
   max_seq_length: 512
-  dataset_fraction: 1.0
+  dataset_fraction: 0.15
 
 lora:
   r: 16
