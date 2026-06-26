@@ -7,10 +7,10 @@ from transformers import (
     AutoTokenizer,
     BitsAndBytesConfig,
     TrainingArguments,
-    DataCollatorWithPadding
+    DataCollatorWithPadding,
 )
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
-from trl import SFTTrainer #type: ignore
+from trl import SFTTrainer, SFTConfig #type: ignore
 from datasets import DatasetDict
 from wandb import config
 
@@ -68,6 +68,10 @@ def apply_lora(model, cfg: FinetuneConfig, is_qlora: bool):
         # cast layer norm to float32 and enable gradient checkpointing
         # so that backward pass can running over model quantized
         model = prepare_model_for_kbit_training(model)
+        
+        for name, module in model.named_modules():
+            if "norm" in name.lower() or "embed" in name.lower() or "lm_head" in name.lower():
+                module.to(torch.float16)
     
     lora_cfg = LoraConfig(
         r=cfg.lora.r,
@@ -78,32 +82,39 @@ def apply_lora(model, cfg: FinetuneConfig, is_qlora: bool):
         task_type=cfg.lora.task_type,
     )
     
+    if hasattr(model, "lm_head"):
+        model.lm_head.weight.data = model.lm_head.weight.data.to(torch.float16)
+    
     model = get_peft_model(model, lora_cfg)
     model.print_trainable_parameters()
     
     return model
 
 def build_training_args(cfg: FinetuneConfig) -> TrainingArguments:
-    return TrainingArguments(
+    return SFTConfig(
         output_dir=cfg.training.output_dir,
         num_train_epochs=cfg.training.num_train_epochs,
         per_device_eval_batch_size=cfg.training.per_device_train_batch_size,
         per_device_train_batch_size=cfg.training.per_device_train_batch_size,
         gradient_accumulation_steps=cfg.training.gradient_accumulation_steps,
-        learning_rate=cfg.training.learning_rate,
+        learning_rate=float(cfg.training.learning_rate),
         lr_scheduler_type=cfg.training.lr_scheduler_type,
-        warmup_ratio=cfg.training.warmup_ratio,
+        warmup_ratio=float(cfg.training.warmup_ratio),
         fp16=cfg.training.fp16,
         bf16=cfg.training.bf16,
         logging_steps=cfg.training.logging_steps,
         save_steps=cfg.training.save_steps,
         eval_steps=cfg.training.eval_steps,
-        evaluation_strategy="steps", #type: ignore
+        eval_strategy="steps", #type: ignore
         load_best_model_at_end=True,
         report_to=cfg.training.report_to,
         run_name=cfg.training.run_name,
         gradient_checkpointing=True, 
         ddp_find_unused_parameters=False,
+        max_length=cfg.data.max_seq_length,
+        dataset_text_field="text",  # Default-nya sebenarnya sudah "text" di TRL baru
+        packing=False,
+        # max_grad_norm=0.0
     )
 
 def train(cfg: FinetuneConfig, dataset: DatasetDict) -> dict:
@@ -124,22 +135,18 @@ def train(cfg: FinetuneConfig, dataset: DatasetDict) -> dict:
         model = apply_lora(model, cfg, is_qlora=(method=="qlora"))
     
     training_args = build_training_args(cfg)
-    
+
     # setup trainer
     trainer = SFTTrainer(
-        model=model,
+        model=model, #type: ignore
         args=training_args,
         train_dataset=dataset["train"],
         eval_dataset=dataset["val"],
-        tokenizer=tokenizer, #type: ignore
-        max_seq_length=cfg.data.max_seq_length, #type: ignore
-        dataset_text_field="text", #type: ignore
-        packing=False, #type: ignore
+        processing_class=tokenizer, #type: ignore
     )
     
     torch.cuda.reset_peak_memory_stats()
     t_start = time.time()
-    
     train_result = trainer.train()
     
     t_end = time.time()
