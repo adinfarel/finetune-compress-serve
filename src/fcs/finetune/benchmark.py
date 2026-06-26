@@ -44,7 +44,7 @@ def evaluate_gsm8k(
     
     model.eval()
     
-    dataset = load_dataset("gsm8k", "main", split=f"test[:{n_samples}]")
+    dataset = load_dataset("openai/gsm8k", "main", split=f"test").take(n_samples)
     
     correct = 0
     total = 0

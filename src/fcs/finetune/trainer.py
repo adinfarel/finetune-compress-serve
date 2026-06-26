@@ -8,6 +8,7 @@ from transformers import (
     BitsAndBytesConfig,
     TrainingArguments,
     DataCollatorWithPadding,
+    TrainerCallback
 )
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 from trl import SFTTrainer, SFTConfig #type: ignore
@@ -43,13 +44,15 @@ def load_model(cfg: FinetuneConfig) -> AutoModelForCausalLM:
             bnb_4bit_compute_dtype=torch.float16,
             bnb_4bit_use_double_quant=True,
         )
+        model_dtypes = torch.float16
     else:
         bnb_config = None
+        model_dtypes = "auto"
         
     model = AutoModelForCausalLM.from_pretrained(
         cfg.model.name_or_path,
         quantization_config=bnb_config,
-        dtype=torch.float16,
+        dtype=model_dtypes,
         device_map="auto",
         attn_implementation=cfg.model.attn_implementation,
         trust_remote_code=True,
@@ -68,10 +71,6 @@ def apply_lora(model, cfg: FinetuneConfig, is_qlora: bool):
         # cast layer norm to float32 and enable gradient checkpointing
         # so that backward pass can running over model quantized
         model = prepare_model_for_kbit_training(model)
-        
-        for name, module in model.named_modules():
-            if "norm" in name.lower() or "embed" in name.lower() or "lm_head" in name.lower():
-                module.to(torch.float16)
     
     lora_cfg = LoraConfig(
         r=cfg.lora.r,
@@ -82,10 +81,12 @@ def apply_lora(model, cfg: FinetuneConfig, is_qlora: bool):
         task_type=cfg.lora.task_type,
     )
     
-    if hasattr(model, "lm_head"):
-        model.lm_head.weight.data = model.lm_head.weight.data.to(torch.float16)
-    
     model = get_peft_model(model, lora_cfg)
+    
+    for name, param in model.named_parameters():
+      if param.requires_grad:
+        param.data = param.data.to(torch.float16)
+
     model.print_trainable_parameters()
     
     return model
@@ -112,9 +113,9 @@ def build_training_args(cfg: FinetuneConfig) -> TrainingArguments:
         gradient_checkpointing=True, 
         ddp_find_unused_parameters=False,
         max_length=cfg.data.max_seq_length,
-        dataset_text_field="text",  # Default-nya sebenarnya sudah "text" di TRL baru
+        dataset_text_field="text", 
         packing=False,
-        # max_grad_norm=0.0
+        # max_grad_norm=0.0,
     )
 
 def train(cfg: FinetuneConfig, dataset: DatasetDict) -> dict:

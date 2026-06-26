@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Optional
 
 from torch.utils.data import DataLoader
-from transformers import PreTrainedModel, PreTrainedTokenizer, DataCollatorWithPadding
+from transformers import PreTrainedModel, PreTrainedTokenizer, DataCollatorWithPadding, DataCollatorForLanguageModeling, DataCollatorForSeq2Seq
 from datasets import Dataset
 
 from fcs.finetune.config import FinetuneConfig
@@ -33,10 +33,17 @@ def compute_perplexity(
     model.eval()
     model.to(device) #type: ignore
     
-    collator = DataCollatorWithPadding(
+    # collator = DataCollatorWithPadding(
+    #     tokenizer=tokenizer,
+    #     padding="longest",
+    #     return_tensors="pt",
+    # )
+    
+    collator = DataCollatorForSeq2Seq(
         tokenizer=tokenizer,
+        pad_to_multiple_of=None,
         padding="longest",
-        return_tensors="pt",
+        return_tensors="pt"
     )
     
     loader = DataLoader(
