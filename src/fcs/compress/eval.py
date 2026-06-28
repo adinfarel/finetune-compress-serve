@@ -144,7 +144,7 @@ def measure_latency(
             pad_token_id=tokenizer.eos_token_id,
         )
     
-    ttfts, itl = [], []
+    ttfts, itls = [], []
     
     for _ in range(benchmark_runs):
         torch.cuda.synchronize()
@@ -172,5 +172,135 @@ def measure_latency(
         
         torch.cuda.synchronize()
         t_dcd_total = time.perf_counter() - t_dcd_start
+        
+        n_generated = full_output.shape[1] - inputs["input_ids"].shape[1]
+        if n_generated > 1:
+            itl = (t_dcd_total / n_generated)
+            itls.append(itl)
+        
+    ttfts_arr = np.array(ttfts)
+    itls_arr = np.array(itls)
     
-    return dict()
+    return {
+        "ttft_p50_ms": round(float(np.percentile(ttfts_arr, 50)), 3),
+        "ttft_p99_ms": round(float(np.percentile(ttfts_arr, 99)), 3),
+        "itl_p50_ms": round(float(np.percentile(itls_arr, 50)), 3),
+        "itl_p99_ms": round(float(np.percentile(itls_arr, 99)), 3),
+        "throughput_per_sec": round(1000 / float(np.percentile(itls_arr, 50)), 2)
+    }
+    
+def measure_win_rate_vs_stage1(
+    compressed_model,
+    stage1_model_path: str,
+    tokenizer,
+    groq_api_key: str,
+    model_judge: str,
+    n_samples: int = 50,
+    device: str = "cuda",
+) -> dict:
+    """
+    Judge: compressed model vs Stage 1 QLoRA merged.
+    Win rate from perspective compressed model
+    """
+    from fcs.finetune.judge import run_llm_judge
+    
+    stage1_model = AutoModelForCausalLM.from_pretrained(
+        stage1_model_path,
+        dtype=torch.float16,
+        device_map="auto"
+    )
+    
+    results = run_llm_judge(
+        base_model=stage1_model,
+        ft_model=compressed_model,
+        tokenizer=tokenizer,
+        groq_api_key=groq_api_key,
+        n_samples=n_samples,
+        device=device,
+        model=model_judge,
+    )
+    
+    return {
+        "win_rate_vs_stage1": results["judge_win_rate"],
+        "tie_rate_vs_stage1": results["judge_tie_rate"],
+        "loss_rate_vs_stage1": results["judge_loss_rate"],
+    }
+
+def run_compress_eval(
+    model,
+    tokenizer,
+    cfg: CompressConfig,
+    method_name: str,
+    compress_metadata: dict,
+    stage1_model_path: str,
+    groq_api_key: str = "",
+    model_judge: str = "",
+    run_judge: bool = True,
+    device: Optional[str] = None
+) -> dict:
+    if device is None:
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+    
+    ecfg: EvalConfig = cfg.eval
+    
+    print("\n[1/4] Computing perplexity...")
+    ppl = compute_perplexity(
+        model=model,
+        tokenizer=tokenizer,
+        device=device,
+    )
+    
+    print("\n[2/4] GSM8K accuracy...")
+    gsm = compute_gsm8k(model, tokenizer, device=device)
+    
+    print("\n[3/4] Inference latency...")
+    latency = measure_latency(
+        model,
+        tokenizer,
+        prompt=ecfg.latency_prompt,
+        max_new_tokens=ecfg.latency_max_new_tokens,
+        warmup_runs=ecfg.latency_warmup_runs,
+        benchmark_runs=ecfg.latency_benchmark_runs,
+        device=device,
+    )
+    
+    judge = {}
+    if run_judge and groq_api_key:
+        print(f"[4/4] Win rate vs Stage 1...")
+        judge = measure_win_rate_vs_stage1(
+            compressed_model=model,
+            stage1_model_path=stage1_model_path,
+            tokenizer=tokenizer,
+            groq_api_key=groq_api_key,
+            model_judge=model_judge,
+            n_samples=ecfg.judge_samples,
+            device=device,
+        )
+    else:
+        print(f"[4/4] Skipping judge (no Groq key)")
+    
+    output_dir = cfg.model.output_dir
+    size_mb = sum(
+        f.stat().st_size for f in Path(output_dir).rglob("*") if f.is_file()
+        if f.suffix in (".bin", ".safetensors")
+    ) / 1024**2 # mb
+    
+    peak_mem_mb = torch.cuda.max_memory_allocated() / 1024*82
+    
+    full_results = {
+        "method": method_name,
+        **compress_metadata,
+        **ppl,
+        **gsm,
+        **latency,
+        **judge,
+        "size_mb": round(size_mb, 2),
+        "peak_inference_mem_mb": round(peak_mem_mb, 2),
+    }
+    
+    out_path = Path(output_dir) / "results.json"
+    with open(out_path, "w") as f:
+        json.dump(full_results, f, indent=2)
+    
+    print(f"\n Result saved to {out_path}")
+    return full_results
