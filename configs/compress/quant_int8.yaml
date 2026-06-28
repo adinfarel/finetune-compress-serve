@@ -1,7 +1,7 @@
 method: "quant"
 
 model:
-  input_model_path: "results/stage1/quant_merged"
+  input_model_path: "results/stage1/qlora_merged"
   output_dir: "results/stage2/quant_int8"
   dtype: "float16"
 
