@@ -37,7 +37,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
-from fcs.compress.config import CompressConfig
+from fcs.compress.config import CompressConfig, CompressModelConfig
 from fcs.compress.quant import run_quantize
 from fcs.compress.prune import run_prune
 from fcs.compress.distill import run_distill
@@ -46,15 +46,21 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
 def _merged_win_stage1():
     from peft import PeftModel, AutoPeftModelForCausalLM
+    merged_path = Path(CompressModelConfig.input_model_path)
+    merged_path.mkdir(parents=True, exist_ok=True)
+
+    has_safetensors = any(merged_path.glob("*.safetensors"))
+    
+    if merged_path.exists() and has_safetensors:
+        print("Safetensors exists, Skipping...")
+        return
+
     merged = AutoPeftModelForCausalLM.from_pretrained(
         "results/stage1/qlora",
         dtype=torch.float16,
         device_map="auto"
     )
     merged = merged.merge_and_unload()
-    
-    merged_path = Path(CompressConfig.model.input_model_path)
-    merged_path.mkdir(parents=True, exist_ok=True)
     
     merged.save_pretrained(merged_path, safe_serialization=True)
     tokenizer = AutoTokenizer.from_pretrained("results/stage1/qlora")
@@ -72,6 +78,12 @@ def parse_args():
     parser.add_argument("--config", type=str, required=True)
     parser.add_argument("--skip-judge", action="store_true")
     parser.add_argument("--skip-benchmark", action="store_true")
+    parser.add_argument(
+      "--stage1-model-path",
+      type=str,
+      default="results/stage1/qlora_merged",
+      help="Path ke Stage 1 QLoRA merged model untuk win rate comparison",
+    )
     return parser.parse_args()
 
 def load_model_for_eval(cfg: CompressConfig):
