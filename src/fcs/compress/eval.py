@@ -12,6 +12,7 @@ from transformers import (
     DataCollatorWithPadding,
     BitsAndBytesConfig,
     FastVlmPreTrainedModel,
+    DataCollatorForSeq2Seq,
 )
 from datasets import load_dataset
 
@@ -49,7 +50,13 @@ def compute_perplexity(
 
     tokenized = raw.map(tokenize, remove_columns=raw.column_names, batched=False)
     
-    collator = DataCollatorWithPadding(tokenizer=tokenizer, padding="longest", return_tensors="pt")
+    # collator = DataCollatorWithPadding(tokenizer=tokenizer, padding="longest", return_tensors="pt")
+    collator = DataCollatorForSeq2Seq(
+        tokenizer=tokenizer,
+        model=model,        
+        padding=True,       
+        return_tensors="pt"
+    )
     loader = DataLoader(tokenized, batch_size=batch_size, collate_fn=collator, shuffle=False) #type: ignore
     
     model.eval()
@@ -79,39 +86,53 @@ import re
 def compute_gsm8k(
     model,
     tokenizer,
-    n_samples: int = 100,
+    n_samples: int = 24,
     max_new_tokens: int = 256,
+    batch_size: int = 8,
     device: Optional[str] = None,
 ) -> dict:
     if device is None:
         device = "cuda" if torch.cuda.is_available() else "cpu"
+      
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+    tokenizer.padding_side = "left"
 
-    ds = load_dataset("openai/gsm8k", "main", split=f"test", streaming=True).take(n_samples)
+    ds = list(load_dataset("openai/gsm8k", "main", split=f"test", streaming=True).take(n_samples))
     model.eval()
     correct = 0
     
-    for ex in ds:
-        prompt = (
-            f"Below is a math problem. Solve it step by step.\n\n"
-            f"### Problem:\n{ex['question']}\n\n### Solution:\n"
-        )
-        inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=512).to(device)
+    for i in range(0, len(ds), batch_size):
+        batch_exs = ds[i : i + batch_size]
+        
+        prompts = [
+            f"Below is a math problem. Solve it step by step.\n\n### Problem:\n{ex['question']}\n\n### Solution:\n"
+            for ex in batch_exs
+        ]
+        
+        inputs = tokenizer(prompts, return_tensors="pt", padding=True, truncation=True, max_length=512).to(device)
+        
         outputs = model.generate(
             **inputs,
             max_new_tokens=max_new_tokens,
             do_sample=False,
-            pad_token_id=tokenizer.eos_token_id,
+            pad_token_id=tokenizer.pad_token_id,
+            eos_token_id=tokenizer.eos_token_id,
+            use_cache=True, 
         )
-        generated = tokenizer.decode(outputs[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True)
+        
+        input_len = inputs["input_ids"].shape[1]
+        for idx, ex in enumerate(batch_exs):
+            generated = tokenizer.decode(outputs[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True)
 
-        nums_pred = re.findall(r"-?\d+(?:\.\d+)?", generated.replace(",", ""))
-        nums_gold = re.findall(r"-?\d+(?:\.\d+)?", ex["answer"].replace(",", ""))
+            nums_pred = re.findall(r"-?\d+(?:\.\d+)?", generated.replace(",", ""))
+            nums_gold = re.findall(r"-?\d+(?:\.\d+)?", ex["answer"].replace(",", ""))
 
-        pred = float(nums_pred[-1]) if nums_pred else None
-        gold = float(nums_gold[-1]) if nums_gold else None
+            pred = float(nums_pred[-1]) if nums_pred else None
+            gold = float(nums_gold[-1]) if nums_gold else None
 
-        if pred is not None and gold is not None and abs(pred - gold) < 1e-6:
-            correct += 1
+            if pred is not None and gold is not None and abs(pred - gold) < 1e-6:
+                correct += 1
     
     return {
         "gsm8k_accuracy": round(correct / n_samples, 4),
@@ -175,7 +196,8 @@ def measure_latency(
         
         n_generated = full_output.shape[1] - inputs["input_ids"].shape[1]
         if n_generated > 1:
-            itl = (t_dcd_total / n_generated)
+            t_itl_total = t_dcd_total - ttft
+            itl = (t_itl_total / (n_generated - 1)) * 1000
             itls.append(itl)
         
     ttfts_arr = np.array(ttfts)

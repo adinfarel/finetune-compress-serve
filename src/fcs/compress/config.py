@@ -78,7 +78,7 @@ class CompressConfig:
             model=CompressModelConfig(**raw.get("model", {})),
             quant=QuantConfig(**raw.get("quant", {})),
             prune=PruneConfig(**raw.get("prune", {})),
-            distill=DistillConfig(**raw.get("distill")),
+            distill=DistillConfig(**raw.get("distill", {})),
             eval=EvalConfig(**raw.get("eval", {})),
             method=raw.get("method", ""),
         )
