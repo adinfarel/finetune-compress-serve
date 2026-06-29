@@ -107,7 +107,7 @@ LoRA/QLoRA save only adapter weights (~6–25 MB) not the full model. Before Sta
 
 ## Next Step
 
-QLoRA checkpoint proceeds to **Stage 2 — Compression**, where quantization, pruning, and distillation will be applied to the merged QLoRA model.
+QLoRA checkpoint proceeds to **Stage 2 — Compression**, where quantization, and pruning will be applied to the merged QLoRA model.
 
 Before Stage 2, run:
 ```python
