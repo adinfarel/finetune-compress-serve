@@ -1,0 +1,11 @@
+experiment: "hf_eager"
+output_dir: "results/stage2/hf_eager"
+
+model:
+  fp16_model_path: "results/stage1/qlora_merged"
+  dtype: "float16"
+
+benchmark:
+  max_new_tokens: 128
+  warmup_runs: 3
+  benchmark_runs: 20
