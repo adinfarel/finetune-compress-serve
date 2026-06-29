@@ -1,0 +1,14 @@
+{
+  "method": "awq",
+  "input_model_path": "results/stage1/qlora_merged",
+  "quant_time_sec": 331.40772819519043,
+  "checkpoint_size_mb": 999.7075567245483,
+  "calibration_samples": 128,
+  "quant_config": {
+    "zero_point": true,
+    "q_group_size": 128,
+    "w_bit": 4,
+    "version": "GEMM"
+  },
+  "note": "AWQ checkpoint saved to disk, directly loadable by vLLM."
+}

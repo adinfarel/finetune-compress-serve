@@ -1,0 +1,20 @@
+{
+  "method": "int4_bnb",
+  "quant_method": "int4_bnb",
+  "perplexity": 6.6529,
+  "avg_loss": 1.895059,
+  "n_tokens": 36670,
+  "gsm8k_accuracy": 0.0417,
+  "gsm8k_correct": 1,
+  "gsm8k_total": 24,
+  "ttft_p50_ms": 58.792,
+  "ttft_p99_ms": 97.064,
+  "itl_p50_ms": 45.665,
+  "itl_p99_ms": 57.439,
+  "throughput_per_sec": 21.9,
+  "win_rate_vs_stage1": 0.45,
+  "tie_rate_vs_stage1": 0.1,
+  "loss_rate_vs_stage1": 0.45,
+  "size_mb": 0.0,
+  "peak_inference_mem_mb": 501890676.0
+}

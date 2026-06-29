@@ -1,0 +1,20 @@
+{
+  "method": "int8",
+  "quant_method": "int8",
+  "perplexity": 6.4458,
+  "avg_loss": 1.863431,
+  "n_tokens": 36670,
+  "gsm8k_accuracy": 0.0417,
+  "gsm8k_correct": 1,
+  "gsm8k_total": 24,
+  "ttft_p50_ms": 107.402,
+  "ttft_p99_ms": 140.696,
+  "itl_p50_ms": 77.342,
+  "itl_p99_ms": 78.201,
+  "throughput_per_sec": 12.93,
+  "win_rate_vs_stage1": 0.5,
+  "tie_rate_vs_stage1": 0.2,
+  "loss_rate_vs_stage1": 0.3,
+  "size_mb": 0.0,
+  "peak_inference_mem_mb": 539357337.0
+}

@@ -1,0 +1,7 @@
+{
+  "method": "int8",
+  "input_model_path": "results/stage1/qlora_merged",
+  "load_time_sec": 6.579896450042725,
+  "peak_memory_mb": 1430.5673828125,
+  "note": "bitsandbytes quantization is load-time only;  no seperate checkpoint is saved, only this metadata."
+}

@@ -1,0 +1,30 @@
+{
+  "method": "awq",
+  "input_model_path": "results/stage1/qlora_merged",
+  "quant_time_sec": 331.40772819519043,
+  "checkpoint_size_mb": 999.7075567245483,
+  "calibration_samples": 128,
+  "quant_config": {
+    "zero_point": true,
+    "q_group_size": 128,
+    "w_bit": 4,
+    "version": "GEMM"
+  },
+  "note": "AWQ checkpoint saved to disk, directly loadable by vLLM.",
+  "perplexity": 6.6368,
+  "avg_loss": 1.892627,
+  "n_tokens": 36670,
+  "gsm8k_accuracy": 0.0,
+  "gsm8k_correct": 0,
+  "gsm8k_total": 24,
+  "ttft_p50_ms": 48.468,
+  "ttft_p99_ms": 68.965,
+  "itl_p50_ms": 98.829,
+  "itl_p99_ms": 100.888,
+  "throughput_per_sec": 10.12,
+  "win_rate_vs_stage1": 0.35,
+  "tie_rate_vs_stage1": 0.2,
+  "loss_rate_vs_stage1": 0.45,
+  "size_mb": 983.29,
+  "peak_inference_mem_mb": 488110002.0
+}
