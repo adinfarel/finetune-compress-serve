@@ -8,5 +8,5 @@ model:
 prune:
   method: "depth"
   num_layers_to_remove: 4
-  scoring_metric: "magnitude"
+  scoring_metrics: "magnitude"
   calibration_samples: 128
