@@ -11,6 +11,7 @@ from transformers import (
     TrainingArguments,
     Trainer,
     DataCollatorWithPadding,
+    DataCollatorForSeq2Seq,
 )
 from datasets import load_dataset, Dataset
 
@@ -43,7 +44,7 @@ def distillation_loss(
     
     shift_logits = student_logits[:, :-1, :].contiguous().view(-1, C)
     shift_labels = labels[:, 1:].contiguous().view(-1)
-    shift_labels[shift_labels != -100] = 0
+    shift_labels[shift_labels == -100] = 0
     
     ce_loss = F.cross_entropy(
         shift_logits,
@@ -124,7 +125,7 @@ def prepare_distill_dataset(
                         batched=False, desc="Tokenizing for distillation")
     
     split = tokenized.train_test_split(test_size=0.05, seed=seed) #type: ignore
-    return {"train": split['train'], "test": split['test']}
+    return {"train": split['train'], "val": split['test']}
 
 def run_distill(cfg: CompressConfig):
     """
@@ -176,7 +177,7 @@ def run_distill(cfg: CompressConfig):
         per_device_train_batch_size=dcfg.per_device_train_batch_size,
         per_device_eval_batch_size=dcfg.per_device_train_batch_size,
         gradient_accumulation_steps=dcfg.gradient_accumulation_steps,
-        learning_rate=dcfg.learning_rate,
+        learning_rate=float(dcfg.learning_rate),
         fp16=dcfg.fp16,
         bf16=dcfg.bf16,
         logging_steps=20,
@@ -190,11 +191,17 @@ def run_distill(cfg: CompressConfig):
     )
     
     # FIXME: if occur error use DataCollatorSeq2Seq
-    data_collator = DataCollatorWithPadding(
+    # data_collator = DataCollatorWithPadding(
+    #     tokenizer=tokenizer,
+    #     padding="longest",
+    #     return_tensors="pt",
+    # )
+    data_collator = DataCollatorForSeq2Seq(
         tokenizer=tokenizer,
+        pad_to_multiple_of=None,
         padding="longest",
-        return_tensors="pt",
-    ) 
+        return_tensors="pt"
+    )
     
     t0 = time.time()
     
@@ -207,7 +214,7 @@ def run_distill(cfg: CompressConfig):
         train_dataset=dataset["train"],
         eval_dataset=dataset["val"],
         data_collator=data_collator,
-        tokenizer=tokenizer,
+        processing_class=tokenizer,
     )
     
     trainer.train()
