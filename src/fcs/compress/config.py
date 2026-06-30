@@ -21,11 +21,6 @@ class QuantConfig:
     awq_bits: int = 4
     awq_group_size: int = 128
     awq_zero_point: bool = True
-    
-    gptq_bits: int = 4
-    gptq_group_size: int = 128
-    gptq_desc_act: bool = False
-    gptq_damp_percent: float = 0.01
 
 @dataclass
 class PruneConfig:

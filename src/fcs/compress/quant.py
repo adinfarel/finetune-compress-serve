@@ -142,81 +142,6 @@ def quantize_awq(cfg: CompressConfig):
 
     return output_dir
 
-def quantize_gptq(cfg: CompressConfig):
-    """
-    GPTQ produces an actual quantized checkpoint on disk, similar to AWQ.
-    Unlike AWQ (activation-aware scaling), GPTQ uses layer-wise
-    reconstruction error minimization via Hessian information —
-    quantizes one column at a time, then updates remaining unquantized
-    columns to compensate for the error just introduced.
-    """
-    try:
-        from auto_gptq import AutoGPTQForCausalLM, BaseQuantizeConfig # type: ignore
-    except ImportError as e:
-        raise ImportError(
-            "auto-gptq not installed. Run: pip install auto-gptq"
-        )
-    
-    qcfg: QuantConfig = cfg.quant
-    model_path = cfg.model.input_model_path
-    output_dir = cfg.model.output_dir
-    os.makedirs(output_dir, exist_ok=True)
-    
-    tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
-    
-    quantize_config = BaseQuantizeConfig(
-        bits=qcfg.gptq_bits,
-        group_size=qcfg.gptq_group_size,
-        desc_act=qcfg.gptq_desc_act,
-        damp_percent=qcfg.gptq_damp_percent,
-    )
-    
-    t0 = time.time()
-    model = AutoGPTQForCausalLM.from_pretrained(
-        model_path,
-        quantize_config=quantize_config,
-    )
-    
-    calib_texts = load_calibration_texts(num_samples=128)
-    
-    calib_data = [
-        tokenizer(text, return_tensors="pt") for text in calib_texts
-    ]
-    
-    model.quantize(calib_data)
-    quant_time = time.time() - t0
-    
-    model.save_quantized(output_dir, use_safetensors=True)
-    tokenizer.save_pretrained(output_dir)
-    
-    total_size = sum(
-        f.stat().st_size for f in Path(output_dir).rglob("*") if f.is_file()
-    )
-    size_mb = total_size / (1024 ** 2)
-    
-    metadata = {
-        "method": "gptq",
-        "input_model_path": model_path,
-        "quant_time_sec": quant_time,
-        "checkpoint_size_mb": size_mb,
-        "calibration_samples": len(calib_texts),
-        "quant_config": {
-            "bits": qcfg.gptq_bits,
-            "group_size": qcfg.gptq_group_size,
-            "desc_act": qcfg.gptq_desc_act,
-            "damp_percent": qcfg.gptq_damp_percent,
-        },
-        "note": "GPTQ checkpoint saved to disk, directly loadable by vLLM "
-                "(similar to AWQ, but uses Hessian-based reconstruction "
-                "error minimization instead of activation-aware scaling).",
-    }
-    with open(Path(output_dir) / "quant_gptq.json", "w") as f:
-        json.dump(metadata, f, indent=2)
-
-    print(f"[GPTQ] quantized in {quant_time:.2f}s, "
-          f"checkpoint size {size_mb:.1f} MB, saved to {output_dir}")
-
-    return output_dir
 def run_quantize(cfg: CompressConfig):
     method = cfg.quant.method
     print(f"=== Running quantization: {method} ===")
@@ -225,7 +150,5 @@ def run_quantize(cfg: CompressConfig):
         return quantize_bitsandbytes(cfg)
     elif method == "awq":
         return quantize_awq(cfg)
-    elif method == "gptq":
-        return quantize_gptq(cfg)
     else:
         raise ValueError(f"Unknown quant method: {method}")
