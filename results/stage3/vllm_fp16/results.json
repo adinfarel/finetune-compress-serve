@@ -1,0 +1,48 @@
+{
+  "experiment": "vllm_fp16",
+  "model_path": "results/stage1/qlora_merged",
+  "quantization": null,
+  "peak_mem_mb": 0.0,
+  "concurrency_sweep": [
+    {
+      "concurrency": 1,
+      "e2e_p50_ms": 1617.033,
+      "e2e_p99_ms": 1890.275,
+      "throughput_tok_per_sec": 77.54,
+      "itl_p50_ms": 12.633,
+      "itl_p99_ms": 14.768
+    },
+    {
+      "concurrency": 4,
+      "e2e_p50_ms": 1587.338,
+      "e2e_p99_ms": 1616.355,
+      "throughput_tok_per_sec": 322.27,
+      "itl_p50_ms": 3.1,
+      "itl_p99_ms": 3.159
+    },
+    {
+      "concurrency": 8,
+      "e2e_p50_ms": 1691.243,
+      "e2e_p99_ms": 1723.075,
+      "throughput_tok_per_sec": 605.47,
+      "itl_p50_ms": 1.652,
+      "itl_p99_ms": 1.683
+    },
+    {
+      "concurrency": 16,
+      "e2e_p50_ms": 1812.816,
+      "e2e_p99_ms": 1874.72,
+      "throughput_tok_per_sec": 1127.77,
+      "itl_p50_ms": 0.885,
+      "itl_p99_ms": 0.916
+    }
+  ],
+  "n1_metrics": {
+    "concurrency": 1,
+    "e2e_p50_ms": 1617.033,
+    "e2e_p99_ms": 1890.275,
+    "throughput_tok_per_sec": 77.54,
+    "itl_p50_ms": 12.633,
+    "itl_p99_ms": 14.768
+  }
+}

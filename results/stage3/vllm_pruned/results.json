@@ -1,0 +1,48 @@
+{
+  "experiment": "vllm_pruned",
+  "model_path": "results/stage2/prune_depth",
+  "quantization": null,
+  "peak_mem_mb": 0.0,
+  "concurrency_sweep": [
+    {
+      "concurrency": 1,
+      "e2e_p50_ms": 1270.192,
+      "e2e_p99_ms": 1295.835,
+      "throughput_tok_per_sec": 102.08,
+      "itl_p50_ms": 9.923,
+      "itl_p99_ms": 10.124
+    },
+    {
+      "concurrency": 4,
+      "e2e_p50_ms": 1267.602,
+      "e2e_p99_ms": 1283.783,
+      "throughput_tok_per_sec": 402.64,
+      "itl_p50_ms": 2.476,
+      "itl_p99_ms": 2.508
+    },
+    {
+      "concurrency": 8,
+      "e2e_p50_ms": 1311.837,
+      "e2e_p99_ms": 1320.073,
+      "throughput_tok_per_sec": 781.64,
+      "itl_p50_ms": 1.281,
+      "itl_p99_ms": 1.289
+    },
+    {
+      "concurrency": 16,
+      "e2e_p50_ms": 1449.994,
+      "e2e_p99_ms": 1480.823,
+      "throughput_tok_per_sec": 1412.22,
+      "itl_p50_ms": 0.708,
+      "itl_p99_ms": 0.724
+    }
+  ],
+  "n1_metrics": {
+    "concurrency": 1,
+    "e2e_p50_ms": 1270.192,
+    "e2e_p99_ms": 1295.835,
+    "throughput_tok_per_sec": 102.08,
+    "itl_p50_ms": 9.923,
+    "itl_p99_ms": 10.124
+  }
+}

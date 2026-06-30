@@ -68,7 +68,7 @@ def _merged_win_stage1():
     print(f"Merged model saved to {str(merged_path)!r}")
 
 def _validate_merged_exists():
-    merged_path = Path(CompressConfig.model.input_model_path)
+    merged_path = Path(CompressModelConfig.input_model_path)
     
     if not merged_path.exists():
         raise FileNotFoundError("QLoRA merged directory not found, go first merged them.")
@@ -140,7 +140,6 @@ def main():
     args = parse_args()
     
     _merged_win_stage1()
-    assert _validate_merged_exists()
     
     print(f"Loading config from {args.config}")
     cfg = CompressConfig.from_yaml(args.config)

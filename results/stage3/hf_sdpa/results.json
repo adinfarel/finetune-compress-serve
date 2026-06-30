@@ -1,0 +1,39 @@
+{
+  "experiment": "hf_sdpa",
+  "attn_implementation": "sdpa",
+  "model_path": "results/stage1/qlora_merged",
+  "concurrency": 1,
+  "ttft_p50_ms": 28.653,
+  "ttft_p99_ms": 110.86,
+  "itl_p50_ms": 28.653,
+  "itl_p99_ms": 110.86,
+  "throughput_tok_per_sec": 34.9,
+  "peak_mem_mb": 2366.25,
+  "per_prompt": [
+    {
+      "prompt": "Explain the concept of machine learning in simple terms....",
+      "ttft_p50": 29.145,
+      "itl_p50": 25.643
+    },
+    {
+      "prompt": "Write a short story about a robot learning to paint....",
+      "ttft_p50": 28.106,
+      "itl_p50": 23.563
+    },
+    {
+      "prompt": "What are the main differences between Python and JavaScript?...",
+      "ttft_p50": 28.996,
+      "itl_p50": 25.75
+    },
+    {
+      "prompt": "Describe the water cycle step by step....",
+      "ttft_p50": 28.437,
+      "itl_p50": 25.703
+    },
+    {
+      "prompt": "Give me three tips for improving productivity at work....",
+      "ttft_p50": 30.345,
+      "itl_p50": 29.318
+    }
+  ]
+}

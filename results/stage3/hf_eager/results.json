@@ -1,0 +1,39 @@
+{
+  "experiment": "hf_eager",
+  "attn_implementation": "eager",
+  "model_path": "results/stage1/qlora_merged",
+  "concurrency": 1,
+  "ttft_p50_ms": 26.434,
+  "ttft_p99_ms": 45.26,
+  "itl_p50_ms": 26.434,
+  "itl_p99_ms": 45.26,
+  "throughput_tok_per_sec": 37.83,
+  "peak_mem_mb": 2366.25,
+  "per_prompt": [
+    {
+      "prompt": "Explain the concept of machine learning in simple terms....",
+      "ttft_p50": 26.7,
+      "itl_p50": 23.879
+    },
+    {
+      "prompt": "Write a short story about a robot learning to paint....",
+      "ttft_p50": 25.825,
+      "itl_p50": 23.344
+    },
+    {
+      "prompt": "What are the main differences between Python and JavaScript?...",
+      "ttft_p50": 26.244,
+      "itl_p50": 23.699
+    },
+    {
+      "prompt": "Describe the water cycle step by step....",
+      "ttft_p50": 26.832,
+      "itl_p50": 23.862
+    },
+    {
+      "prompt": "Give me three tips for improving productivity at work....",
+      "ttft_p50": 27.999,
+      "itl_p50": 23.772
+    }
+  ]
+}

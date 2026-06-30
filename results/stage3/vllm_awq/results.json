@@ -1,0 +1,48 @@
+{
+  "experiment": "vllm_awq",
+  "model_path": "results/stage2/quant_awq",
+  "quantization": "awq",
+  "peak_mem_mb": 0.0,
+  "concurrency_sweep": [
+    {
+      "concurrency": 1,
+      "e2e_p50_ms": 5232.119,
+      "e2e_p99_ms": 6126.233,
+      "throughput_tok_per_sec": 24.21,
+      "itl_p50_ms": 40.876,
+      "itl_p99_ms": 47.861
+    },
+    {
+      "concurrency": 4,
+      "e2e_p50_ms": 5226.723,
+      "e2e_p99_ms": 5447.709,
+      "throughput_tok_per_sec": 98.08,
+      "itl_p50_ms": 10.208,
+      "itl_p99_ms": 10.648
+    },
+    {
+      "concurrency": 8,
+      "e2e_p50_ms": 5064.767,
+      "e2e_p99_ms": 5189.778,
+      "throughput_tok_per_sec": 201.59,
+      "itl_p50_ms": 4.946,
+      "itl_p99_ms": 5.07
+    },
+    {
+      "concurrency": 16,
+      "e2e_p50_ms": 5357.947,
+      "e2e_p99_ms": 5506.361,
+      "throughput_tok_per_sec": 381.78,
+      "itl_p50_ms": 2.616,
+      "itl_p99_ms": 2.693
+    }
+  ],
+  "n1_metrics": {
+    "concurrency": 1,
+    "e2e_p50_ms": 5232.119,
+    "e2e_p99_ms": 6126.233,
+    "throughput_tok_per_sec": 24.21,
+    "itl_p50_ms": 40.876,
+    "itl_p99_ms": 47.861
+  }
+}
