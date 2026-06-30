@@ -1,0 +1,13 @@
+method: "quant"
+
+model:
+  input_model_path: "results/stage1/qlora_merged"
+  output_dir: "results/stage2/quant_gptq"
+  dtype: "float16"
+
+quant:
+  method: "gptq"
+  gptq_bits: 4
+  gptq_group_size: 128
+  gptq_desc_act: false
+  gptq_damp_percent: 0.01
